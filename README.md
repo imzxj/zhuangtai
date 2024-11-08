@@ -1,3 +1,6 @@
+> [!WARNING]
+> _该库处于开发构想状态，还未发布到 NPM，不要尝试用于生产环境_
+
 # zhuangtai
 
 一个固执己见的状态管理工具，基于 RxJS，暂只支持 React
@@ -72,7 +75,7 @@ function App() {
 
 ## Store
 
-Store 作为一个 class，其作用是管理数据的存放，处理数据的增删改查，原则上它是可以脱离 react 的
+Store 作为一个 class，其作用是管理数据的存放，处理数据的增删改查，原则上它是可以脱离 React 的
 
 ### 简单示例
 
@@ -138,11 +141,11 @@ count$.subscribe(val => {
 })
 ```
 
-_`select` 方法其实是 RxJS 中 `map` 与 `distinctUntilChanged` 的简写 👉 `observable.pipe(map(selector), distinctUntilChanged(comparer))`_
+_`select` 方法其实是 RxJS 中 `observable.pipe(map(selector), distinctUntilChanged(comparer))` 的简单封装_
 
 ## Plugins
 
-可以通过插件机制对 Store 进行功能扩展，目前内置了 `immer` 与 `persist` 插件
+可以通过插件机制对 Store 进行功能扩展，目前内置了 `immer`、`persist` 与 `history` 插件
 
 ### Immer Plugin
 
@@ -346,37 +349,38 @@ class Counter extends Store<{ count: number }> {
 
 ## 与 React 一起使用
 
-Store 只是一个普通 class，要想它在 react 中使用，必须用一种方法使两者关联起来
+Store 只是一个普通 class，要想它在 React 中使用，必须用一种方法使两者关联起来
 
 ### `useStore`
 
-react 自定义 hook，用于将 Store 中的 state 绑定到 react 组件
+React 自定义 Hook，用于将 Store 中的 state 绑定到 React 组件
 
 ```tsx
 import { useStore } from 'zhuangtai/react'
 ```
 
-它支持多种传参方式
+它支持多种状态选择方式
 
-- 自由写法（使用选择器）
+1. 使用 Selector（可以自由选择 & 组合状态）
 
 ```ts
 const count = useStore(counter, state => state.count)
+const { doubleCount } = useStore(counter, state => ({ doubleCount: state.count * 2 }))
 ```
 
-- 懒人写法（通过 key 选择）
+2. 使用 Keys（写法更便捷，满足大多数使用场景）
 
 ```ts
 const { count } = useStore(counter, ['count'])
 ```
 
-- 懒狗写法（不推荐，会导致多余渲染）
+3. 不传第二个参数（不推荐，代表选择所有状态，会导致多余渲染）
 
 ```ts
 const state = useStore(counter)
 ```
 
-第一种和第二种为推荐使用方式，不会导致多余渲染（默认通过浅比对来判断数据变动，你可以通过第三个参数传入自定义比对函数）
+推荐使用方式 1 和 2，不会导致多余渲染（默认通过浅比对来判断数据变动，你可以通过第三个参数传入自定义比对函数）
 
 **一个使用自定义比对函数的例子**
 
@@ -438,7 +442,7 @@ const persistPlugin = persist<Counter>({
 <details>
 <summary>怎样配合 react-tracked 使用？</summary>
 
-如果你觉得使用选择器的方式太过繁琐，但是不传入选择器又会产生多余渲染，那么 [react-tracked](https://github.com/dai-shi/react-tracked) 是一个不错的选择，它会跟踪你真正使用的 state，未使用的 state 变动时不会触发组件渲染
+如果你觉得通过 Selector 或 Keys 选择状态的方式太过繁琐，但是不传又会产生多余渲染，那么 [react-tracked](https://github.com/dai-shi/react-tracked) 是一个不错的选择，它会跟踪你真正使用的 state，未使用的 state 变动时不会触发组件渲染
 
 首先你需要先安装它
 
